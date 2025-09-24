@@ -1,0 +1,103 @@
+!================================================================
+! Erzeugen eines Pfades mit Koordinaten entlang der HS Richtung
+!================================================================
+
+!XS0_=35     $ YS0_=2   $ Ls_=.1   $ NS_=60 ! Startpunkte des Pfades, SchrittlÃ¤nge, Schrittzahl
+
+/UIS,MSGPOP,3
+
+!*DIM,PFADDATA,Table, 3, 6 !!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Erstes Inkrement des Pfades
+!=================================================
+PATH,F1,2,6,1,
+PPATH,1,,21.2,0.1         ! WillkÃ¼rlicher Startpunkt
+PPATH,2,,XS0_,YS0_
+PDEF,Sx,S,x,AVG
+PDEF,SY,S,y,AVG           ! Definiert Ergebnisse, die in der Tabelle gespeichert werden
+
+PLPAGM,XG,1,'NODE'        ! Plot in Geometrie
+
+*DEL,PFADDATA
+!*DIM,PFADDATA,Table, 3, 6 !!!!!!!!!!!!!!!!!!!!!!!!!
+PAGET,PFADDATA,Table       ! Schreibt aktive Pfadinformation in PFADDATA Array
+
+! Erstellen des Makro Files 'write_HSLinie'
+!=================================================
+*create,write_HSLinie      ! Erzeugen des Makro Files
+   *cfopen,HSLinie,txt,,append   ! HinzufÃ¼gen des Command Files 'HSLinie' zum bestehenden File im Working Directory
+   *Vlen,1                ! Anwenden der Operation auf eine Zeile des Arrays
+      !      x Koordinate      y Koordinate      Sx           Sy
+      *VWrite,PFADDATA(2,1),PFADDATA(2,2),PFADDATA(2,5),PFADDATA(2,6)  ! PFADDATA(Zeile,Spalte)
+      (E14.6,E14.6,E14.6,E14.6)
+   *cfclose
+*end
+
+*use,write_HSLinie
+	
+!=============================================
+! Konstruktion von phi Ã¼ber Koordinatentransformation
+!=============================================
+*do,i,1,NS_,1
+    ! Pfaddaten abrufen
+    Sx_ = PFADDATA(2,5)
+    Sy_ = PFADDATA(2,6)
+
+    PDEF,Clear           ! Ãœberschreiben von Pfaddef, da max. 6 Label
+    PDEF,TAUxy,S,xy,AVG
+    PDEF,Sz,S,z,AVG		
+
+    *DEL,PFADDATA
+    !*DIM,PFADDATA,Table, 3, 6 !!!!!!!!!!!!!!!!!!!!!!!!!
+    PAGET,PFADDATA,TABLE 
+
+    TAUxy_ = PFADDATA(2,5)
+    Sz_    = PFADDATA(2,6)
+
+    ! Abbruchbedingung: Wenn beide Spannungs-Komponenten exakt 0 sind, Skript beenden
+    *IF, TAUxy_, EQ, 0, THEN
+        *IF, Sz_, EQ, 0, THEN
+            *EXIT
+        *ENDIF
+    *ENDIF
+
+    !PDEF,STAT          ! Listet Pfaditem-Labels
+
+!==================================================
+    *IF, ABS(Sx_ - Sy_), LT, 1E-6, THEN
+        *IF, TAUxy_, GT, 0, THEN
+            phi = 45
+        *ELSE
+            phi = -45
+        *ENDIF
+    *ELSE
+        TAN2phi = 2*TAUxy_/(Sx_ - Sy_)
+        *afun,deg     ! Winkel in Grad
+
+        ! Ermittlung der Richtungswinkel Phi1 und Phi2
+        !===============================================
+        *IF, Sx_, LT, Sy_, THEN
+            phi = 0.5*ATAN(TAN2phi) + 90
+        *ELSE
+            phi = 0.5*ATAN(TAN2phi)
+        *ENDIF
+    *ENDIF
+
+!==================================================
+    Xi2_ = PFADDATA(2,1) + cos(phi)	
+    Yi2_ = PFADDATA(2,2) + sin(phi)	
+
+    PATH,F1,2,6,1,	
+    PPATH,1,,PFADDATA(2,1),PFADDATA(2,2)  ! X- und Y-Koordinate aus 2. Punkt des VorgÃ¤ngerpfades
+    PPATH,2,,Xi2_,Yi2_
+    PDEF,Sx,S,x,AVG
+    PDEF,SY,S,y,AVG          ! Definiert Ergebnisse, die in der Tabelle gespeichert werden
+
+    PLPAGM,XG,1,'NODE'       ! Plot in Geometrie
+    !PDEF,STAT          ! Listet Pfaditem-Labels
+
+    *DEL,PFADDATA
+    !*DIM,PFADDATA,Table, 3, 6 !!!!!!!!!!!!!!!!!!!!!!!!!
+    PAGET,PFADDATA,TABLE 
+    *use,write_HSLinie  
+*ENDDO
