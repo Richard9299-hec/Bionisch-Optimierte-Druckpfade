@@ -1,71 +1,52 @@
 fini
-/CLEAR
-/PREP7
+/clear
+/prep7
 
-K,1,0,60
-K,2,0,45
-K,3,40,0
-K,5,40,30
-K,6,25,30
-K,7,40,7
-K,9,25,7
-K,10,0,20
-K,11,25,0
-K,12,25,3.5
-K,13,21.5,3.5 !20
+ET,1,PLANE182 
 
-R1=25
-R2=40
-R3=4
+!Materialdef.
+MPTEMP,,,,,,,,  
+MPTEMP,1,0  
+MPDATA,EX,1,,10000  
+MPDATA,PRXY,1,,.3   
 
-Larc, 2,6,10,R1
-Larc, 1,5,10,R2
-Larc, 9,13,11,R3
-Larc, 11,13,9,R3
-L,1,2
-L,5,7
-L,6,9
-L,7,3
-L,3,11
-CIRCLE, 12, , , , , 3
 
-ALLSEL,ALL
-AL,ALL
+CYL4,0,-10,40,0,25,90
+!rectng,xstart,xend,ystart,yend
+rectng,25,40,-30,-10
+CYL4,25,-22.5,7.5,90,,270
+CYL4,25,-22.5,2.6,0,
+AADD, 2,3
+ASBA,       5,       4 
+nummrg,all
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ET,1,PLANE182
-MPTEMP,1,0
-MPDATA,EX,1,,210000
-MPDATA,PRXY,1,,0.3
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+aclear,all
+esize,1.
+LESIZE,2,,,15,
+LESIZE,4,,,15,
+LESIZE,1,,,39
+LESIZE,3,,,39
 
-LESIZE,all,,,35
-LESIZE,1,,,60
 amesh,all
 
-ALLSEL,ALL
 
-NSEL,S,LOC,x,0
-D,ALL,UX
+SFL,12,PRES,1,
+SFL,15,PRES,1,
+lsel,s,loc,x,0
+DL,all, ,UX,0  
+lsel,all
 
-NSEL,R,LOC,y,51,54
-D,ALL,UY
+nsel,s,loc,y,30
+D,all, Uy,0  
+nsel,all
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      
-LSEL,S,LOC,CY,3.5
-Lsel,R,LOC,Y,3,4
-LSEL,R,LOC,X,20,28 
 
-SFL,ALL,PRESS,-1   
-
-ALLSEL,ALL,
+FINISH  
 /SOL
-SOLVE
-FINISH
-
-/POST1
-SET,1,1
-
-
-
+/STATUS,SOLU
+SOLVE   
+FINISH  
+/POST1  
+set,last
+!*  
+PLeSOL, S,EQV, 0,1.0
